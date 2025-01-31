@@ -44,7 +44,7 @@ jobs:
       - name: Build
         id: run-build
         run: |
-          go build -o " ${{ steps.tmpdir.outputs.TMP_DIR }}/hello-linux-amd64" . 
+          go build -o "${{ steps.tmpdir.outputs.TMP_DIR }}/hello-linux-amd64" . 
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
