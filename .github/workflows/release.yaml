@@ -56,5 +56,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - run: |
-          tejolote attest --artifacts github://${{ github.event.repository.name }}/${{ steps.tag.outputs.TAG }} github://${{ github.event.repository.name }}"${GITHUB_RUN_ID}" --output provenance.intoto.json --sign
+          tejolote attest --artifacts github://${{ github.event.repository.owner.login }}/${{ github.event.repository.name }}/${{ steps.tag.outputs.TAG }} github://${{ github.event.repository.owner.login }}/${{ github.event.repository.name }}"${GITHUB_RUN_ID}" --output provenance.intoto.json --sign
+          cat provenance.intoto.json
 
