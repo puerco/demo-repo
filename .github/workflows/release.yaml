@@ -1,0 +1,61 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write # needed to write releases
+      id-token: write # needed for keyless signing
+      packages: write # needed for pushing the images to ghcr.io
+
+    env:
+      GO111MODULE: on
+      COSIGN_EXPERIMENTAL: "true"
+
+    steps:
+      - name: Check out code onto GOPATH
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Install Tejolote
+        uses: kubernetes-sigs/release-actions/setup-tejolote@a69972745f85aab4ba5d6c681e2a0e7f73eaff2b # v0.3.0
+
+      - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
+        with:
+          go-version-file: go.mod
+          cache: false
+
+      - name: Get TAG
+        id: tag
+        run: |
+          echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: TmpDir
+        id: tmpdir
+        run: |
+          TMP_DIR=$(mktemp -d )
+          echo "TMP_DIR=${TMP_DIR}" >> $GITHUB_OUTPUT
+
+      - name: Build
+        id: run-build
+        run: |
+          TMP_DIR=$(mktemp -d )
+          go build -o " ${{ steps.tag.outputs.TAG }}/hello-linux-amd64" . 
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish Release
+        uses: kubernetes-sigs/release-actions/publish-release@a69972745f85aab4ba5d6c681e2a0e7f73eaff2b # v0.3.0
+        with:
+            assets: "${{ steps.tag.outputs.TAG }}/hello-linux-amd64"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - run: |
+          tejolote attest --artifacts github://${{ github.event.repository.name }}/${{ steps.tag.outputs.TAG }} github://${{ github.event.repository.name }}"${GITHUB_RUN_ID}" --output provenance.intoto.json --sign
+
