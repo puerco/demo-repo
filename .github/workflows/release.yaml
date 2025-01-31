@@ -38,13 +38,12 @@ jobs:
       - name: TmpDir
         id: tmpdir
         run: |
-          TMP_DIR=$(mktemp -d )
+          TMP_DIR=$(mktemp -d ${HOME}/.build.XXXXXX )
           echo "TMP_DIR=${TMP_DIR}" >> $GITHUB_OUTPUT
 
       - name: Build
         id: run-build
         run: |
-          TMP_DIR=$(mktemp -d "${HOME}" )
           go build -o " ${{ steps.tmpdir.outputs.TMP_DIR }}/hello-linux-amd64" . 
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
