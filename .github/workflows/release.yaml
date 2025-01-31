@@ -45,14 +45,14 @@ jobs:
         id: run-build
         run: |
           TMP_DIR=$(mktemp -d )
-          go build -o " ${{ steps.tag.outputs.TAG }}/hello-linux-amd64" . 
+          go build -o " ${{ steps.tmpdir.outputs.TMP_DIR }}/hello-linux-amd64" . 
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish Release
         uses: kubernetes-sigs/release-actions/publish-release@a69972745f85aab4ba5d6c681e2a0e7f73eaff2b # v0.3.0
         with:
-            assets: "${{ steps.tag.outputs.TAG }}/hello-linux-amd64"
+            assets: "${{ steps.tmpdir.outputs.TMP_DIR }}/hello-linux-amd64"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
