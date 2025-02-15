@@ -9,10 +9,13 @@ jobs:
 
     permissions:
       contents: 'read'
-      # id-token: 'write'
+      id-token: 'write'
 
     steps:
       - name: Setup bnd
+        uses: carabiner-dev/bnd-actions/setup@HEAD
+
+      - name: Setup snappy
         uses: carabiner-dev/snappy-actions/setup@HEAD
 
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -20,6 +23,9 @@ jobs:
       - name: Generate org attestation
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: snappy snap builtin:github/org.yaml -v ORG=${{github.repository_owner}} --attest
+        run: |
+          snappy snap builtin:github/org.yaml -v ORG=${{github.repository_owner}} --attest > org.intoto.json
+          bnd statement org.intoto.json --out org.bundle
+          bnd push ${{github.repository}} org.bundle
         id: attest
 
