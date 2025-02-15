@@ -1,0 +1,23 @@
+name: Test bnd setup
+
+on:
+  workflow_dispatch:
+
+jobs:
+  setup-bnd:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: 'read'
+      # id-token: 'write'
+
+    steps:
+      - name: Setup bnd
+        uses: carabiner-dev/snappy-actions/setup@HEAD
+
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Generate org attestation
+        run: snappy snap builtin:github/org.yaml -v ORG=${{github.repository_owner}} --attest
+        id: attest
+
