@@ -1,15 +1,16 @@
-name: attest-organization
+name: attest
 
 on:
   workflow_dispatch:
 
 jobs:
-  setup-bnd:
+  organization:
     runs-on: ubuntu-latest
 
     permissions:
       contents: 'read'
       id-token: 'write'
+      attestations: 'write'
 
     steps:
       - name: Setup bnd
