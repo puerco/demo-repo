@@ -1,0 +1,25 @@
+# SPDX-FileCopyrightText: Copyright 2025 Carabiner Systems, Inc
+# SPDX-License-Identifier: Apache-2.0
+
+name: unpack-it
+
+on:
+  workflow_dispatch:
+
+jobs:
+  organization:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+      attestations: 'write'
+
+    steps:
+      #- name: Setup bnd
+      #  uses: carabiner-dev/bnd-actions/setup@HEAD
+
+      - name: Setup unpack
+        uses: carabiner-dev/actions/install/unpack@HEAD
+
+      
