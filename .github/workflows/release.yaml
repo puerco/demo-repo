@@ -63,9 +63,9 @@ jobs:
 
       - name: Generate SBOM
         run:
-          unpack extract . -f spdx --attest > spdx.intoto.json
-          unpack extract . -f spdx > ${{ github.event.repository.name }}-${{ steps.tag.outputs.TAG }}.spdx.json
-          unpack extract . -f cyclonedx > ${{ github.event.repository.name }}-${{ steps.tag.outputs.TAG }}.cdx.json
+          unpack extract . --ignore-other-codebases -f spdx --attest > spdx.intoto.json
+          unpack extract . --ignore-other-codebases -f spdx > ${{ github.event.repository.name }}-${{ steps.tag.outputs.TAG }}.spdx.json
+          unpack extract . --ignore-other-codebases -f cyclonedx > ${{ github.event.repository.name }}-${{ steps.tag.outputs.TAG }}.cdx.json
 
       - run: |
           tejolote attest --artifacts github://${{ github.event.repository.owner.login }}/${{ github.event.repository.name }}/${{ steps.tag.outputs.TAG }} github://${{ github.event.repository.owner.login }}/${{ github.event.repository.name }}"/${{ github.run_id }}" --output slsa.intoto.json 
