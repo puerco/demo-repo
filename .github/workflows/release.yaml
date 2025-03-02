@@ -59,11 +59,25 @@ jobs:
           tejolote attest --artifacts github://${{ github.event.repository.owner.login }}/${{ github.event.repository.name }}/${{ steps.tag.outputs.TAG }} github://${{ github.event.repository.owner.login }}/${{ github.event.repository.name }}"/${{ github.run_id }}" --output provenance.intoto.json --sign
           cat provenance.intoto.json
 
+      - name: Setup bnd
+        uses: carabiner-dev/bnd-actions/setup@HEAD
+
+      - name: Attest Security Insights
+        id: attest-si
+        run: |
+          bnd commit --predicate-git-path=SECURITY-INSIGHTS.yml --yaml --repo . > si.bundle.json
+          cat si.bundle.json
+
+      - name: Pack Attestations
+        id: pack-attestations
+        run: |
+          bnd pack si.bundle.json provenance.intoto.json > attestations.jsonl
+
       - name: upload-attestation
         id: upload-release-asset 
         uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda # v2.2.1
         with:
-          files: provenance.intoto.json
+          files: attestations.jsonl
           tag_name: "${{ steps.tag.outputs.TAG }}"
           token: ${{ secrets.GITHUB_TOKEN }}
         env:
