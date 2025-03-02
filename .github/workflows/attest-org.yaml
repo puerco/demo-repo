@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  organization:
+  attest-github:
     runs-on: ubuntu-latest
 
     permissions:
@@ -25,8 +25,26 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          snappy snap builtin:github/branch-protection.yaml -v BRANCH=main -v REPO=bnd -v ORG=${{github.repository_owner}} --attest > statement.intoto.json
-          bnd statement statement.intoto.json --out org.bundle
-          bnd push ${{github.repository}} org.bundle
-        id: attest
+          snappy snap builtin:github/branch-protection.yaml -v BRANCH=main -v REPO=bnd -v ORG=${{github.repository_owner}} --attest > org.intoto.json
+          bnd statement org.intoto.json --out org.bundle.json
+          bnd push ${{github.repository}} org.bundle.json
+        id: attest-org
+
+      - name: Generate branch rules attestation
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          snappy snap builtin:github/branch-rules.yaml -v BRANCH=main -v REPO=bnd -v ORG=${{github.repository_owner}} --attest > branch.intoto.json
+          bnd statement branch.intoto.json --out branch.bundle.json
+          bnd push ${{github.repository}} branch.bundle.json
+        id: attest-branch
+
+      - name: Generate repo attestation
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          snappy snap builtin:github/repo.yaml -v BRANCH=main -v REPO=bnd -v ORG=${{github.repository_owner}} --attest > repo.intoto.json
+          bnd statement repo.intoto.json --out repo.bundle.json
+          bnd push ${{github.repository}} repo.bundle.json
+        id: attest-repo
 
