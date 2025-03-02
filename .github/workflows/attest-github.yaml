@@ -25,7 +25,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          snappy snap builtin:github/branch-protection.yaml -v BRANCH=main -v REPO=bnd -v ORG=${{github.repository_owner}} --attest > org.intoto.json
+          snappy snap builtin:github/org.yaml -v BRANCH=main -v REPO=bnd -v ORG=${{github.repository_owner}} --attest > org.intoto.json
           bnd statement org.intoto.json --out org.bundle.json
           bnd push ${{github.repository}} org.bundle.json
         id: attest-org
