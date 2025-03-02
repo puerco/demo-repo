@@ -55,12 +55,22 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - run: |
-          tejolote attest --artifacts github://${{ github.event.repository.owner.login }}/${{ github.event.repository.name }}/${{ steps.tag.outputs.TAG }} github://${{ github.event.repository.owner.login }}/${{ github.event.repository.name }}"/${{ github.run_id }}" --output provenance.intoto.json --sign
-          cat provenance.intoto.json
-
       - name: Setup bnd
         uses: carabiner-dev/bnd-actions/setup@HEAD
+
+      - name: Setup unpack
+        uses: carabiner-dev/actions/install/unpack@HEAD
+
+      - name: Generate SBOM
+        run:
+          unpack extract . -f spdx --attest > spdx.intoto.json
+          unpack extract . -f spdx > ${{ github.event.repository.name }}-${{ steps.tag.outputs.TAG }}.spdx.json
+          unpack extract . -f cyclonedx > ${{ github.event.repository.name }}-${{ steps.tag.outputs.TAG }}.cdx.json
+
+      - run: |
+          tejolote attest --artifacts github://${{ github.event.repository.owner.login }}/${{ github.event.repository.name }}/${{ steps.tag.outputs.TAG }} github://${{ github.event.repository.owner.login }}/${{ github.event.repository.name }}"/${{ github.run_id }}" --output slsa.intoto.json 
+          cat slsa.intoto.json
+          bnd statement slsa.intoto.json --out slsa.bundle.json
 
       - name: Attest Security Insights
         id: attest-si
@@ -71,13 +81,16 @@ jobs:
       - name: Pack Attestations
         id: pack-attestations
         run: |
-          bnd pack si.bundle.json provenance.intoto.json > attestations.jsonl
+          bnd pack si.bundle.json slsa.bundle.json spdx.intoto.json > attestations.jsonl
 
       - name: upload-attestation
         id: upload-release-asset 
         uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda # v2.2.1
         with:
-          files: attestations.jsonl
+          files:
+              attestations.jsonl
+              ${{ github.event.repository.name }}-${{ steps.tag.outputs.TAG }}.spdx.json
+              ${{ github.event.repository.name }}-${{ steps.tag.outputs.TAG }}.cdx.json
           tag_name: "${{ steps.tag.outputs.TAG }}"
           token: ${{ secrets.GITHUB_TOKEN }}
         env:
