@@ -25,6 +25,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
+          snappy snap builtin:github/mfa.yaml -v ORG=${{github.repository_owner}} --attest > mfa.intoto.json
+          bnd statement mfa.intoto.json --out mfa.bundle.json
+          bnd push ${{github.repository}} mfa.bundle.json
+        id: attest-mfa
+
+      - name: Generate org attestation
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
           snappy snap builtin:github/org.yaml -v BRANCH=main -v REPO=bnd -v ORG=${{github.repository_owner}} --attest > org.intoto.json
           bnd statement org.intoto.json --out org.bundle.json
           bnd push ${{github.repository}} org.bundle.json
