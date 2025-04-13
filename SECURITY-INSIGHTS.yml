@@ -1,38 +1,71 @@
----
 header:
   schema-version: 2.0.0
-  last-updated: '2025-02-06'
-  last-reviewed: '2025-02-06'
+  last-updated: '2021-09-01'
+  last-reviewed: '2022-09-01'
+  # url: https://example.com/foo/bar
 
 project:
-  name: Demo
+  name: Demo Repository
+  homepage: https://carabiner.dev
+  # steward:
+  #   uri: https://example.com
+  #   comment: |
+  #     Some description of the relationship between this project and its steward.
   administrators:
-    - name: Puerco
-      affiliation: Carabiner Systems
+    - name: Puerco J. Cerdo
+      affiliation: Carabiner Systems, Inc
       email: puerco@carabiner.dev
       primary: true
+  documentation:
+    quickstart-guide: https://carabiner.dev/docs/demo/intro
+    detailed-guide: https://example.com/user-guide
+    code-of-conduct: https://carabiner.dev/code-of-conduct.html
+    support-policy: https://carabiner.dev/support-policy#demo
+    signature-verification: https://carabiner.dev/docs/verifying
+  repositories:
+    - name: Other
+      url: https://github.com/carabiner-dev/library
+      comment: |
+        Example subproject
   vulnerability-reporting:
     reports-accepted: true
-    bug-bounty-available: false
+    contact:
+      name: Carabiner PSIRT
+      email: security@carabiner.dev
+      primary: true
+    security-policy: https://carabiner.dev/security-policy
 
 repository:
   url: https://github.com/carabiner-dev/demo-repo
   status: active
   accepts-change-request: true
   accepts-automated-change-request: true
+  no-third-party-packages: false
   core-team:
-    - name: Puerco
+    - name:        Puerco J. Cerdo
       affiliation: Carabiner Systems, Inc
-      email: puerco@carabiner.dev
-      primary: true
+      primary:     true
+    - name:        gort2000
+      affiliation: uServers
+      primary:     false
+  documentation:
+    contributing-guide: https://github.com/carabiner-dev/demo-repo/blob/main/CONTIBUTING.md
+    security-policy: https://carabiner.dev/security-policy
+    governance: https://example.com/governance
+    dependency-management-policy: https://github.com/carabiner-dev/demo-repo/blob/main/dependencies.md
   license:
     expression: Apache-2.0
-  documentation:
-    contributing-guide: ""
-    review-policy: ""
-    security-policy: ""
-    governance: ""
-    dependency-management-policy: ""
-  distribution-points:
-    - uri:  https://github.com/carabiner-dev/demo-repo/releases
-      comment: GitHub Release Page
+  release:
+    changelog: https://example.com/release/{version}#changelog
+    automated-pipeline: true
+    license:
+      expression: Apache-2.0
+  security:
+    assessments:
+      self:
+        evidence: https://carabiner.dev/assessment.html
+        date: '2021-09-01'
+    champions:
+      - name:   Carabiner PSIRT
+        email:  psirt@carabiner.dev
+        primary: true
