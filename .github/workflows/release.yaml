@@ -19,7 +19,7 @@ jobs:
       COSIGN_EXPERIMENTAL: "true"
 
     steps:
-      - name: Check out code onto GOPATH
+      - name: Check out code
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Install Tejolote
@@ -58,29 +58,69 @@ jobs:
       - name: Setup bnd
         uses: carabiner-dev/actions/install/bnd@HEAD
 
+      - name: Setup snappy
+        uses: carabiner-dev/actions/install/snappy@HEAD
+
       - name: Setup unpack
         uses: carabiner-dev/actions/install/unpack@HEAD
 
       - name: Generate SBOM
         run:
-          unpack extract . --ignore-other-codebases -f spdx --attest > spdx.intoto.json
-          unpack extract . --ignore-other-codebases -f spdx > ${{ github.event.repository.name }}-${{ steps.tag.outputs.TAG }}.spdx.json
+          mkdir attestations
+          unpack extract . --ignore-other-codebases -f spdx --attest > attestations/spdx.intoto.json
+          unpack extract . --ignore-other-codebases -f spdx > attestations/${{ github.event.repository.name }}-${{ steps.tag.outputs.TAG }}.spdx.json
      
       - run: |
-          tejolote attest --artifacts github://${{ github.event.repository.owner.login }}/${{ github.event.repository.name }}/${{ steps.tag.outputs.TAG }} github://${{ github.event.repository.owner.login }}/${{ github.event.repository.name }}"/${{ github.run_id }}" --output slsa.intoto.json 
-          cat slsa.intoto.json
-          bnd statement slsa.intoto.json --out slsa.bundle.json
+          tejolote attest --artifacts github://${{ github.event.repository.owner.login }}/${{ github.event.repository.name }}/${{ steps.tag.outputs.TAG }} github://${{ github.event.repository.owner.login }}/${{ github.event.repository.name }}"/${{ github.run_id }}" --output attestations/slsa.intoto.json 
+          cat attestations/slsa.intoto.json
+          bnd statement attestations/slsa.intoto.json --out attestations/slsa.bundle.json
 
       - name: Attest Security Insights
         id: attest-si
         run: |
-          bnd commit --predicate-git-path=SECURITY-INSIGHTS.yml --yaml --repo . > si.bundle.json
-          cat si.bundle.json
+          bnd commit --predicate-git-path=SECURITY-INSIGHTS.yml --type=https://github.com/ossf/security-insights-spec --yaml --repo . > attestations/si.bundle.json
+          cat attestations/si.bundle.json
 
+      - name: Generate MFA attestation
+        env:
+           GITHUB_TOKEN: ${{ github.token }}
+        run: |
+            snappy snap builtin:github/mfa.yaml -v ORG=${{github.repository_owner}} --attest > attestations/mfa.intoto.json
+            bnd statement attestations/mfa.intoto.json --out attestations/mfa.bundle.json
+            bnd push ${{github.repository}} attestations/mfa.bundle.json
+        id: attest-mfa
+  
+      - name: Generate org attestation
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          snappy snap builtin:github/org.yaml -v BRANCH=main -v REPO=bnd -v ORG=${{github.repository_owner}} --attest > attestations/org.intoto.json
+          bnd statement attestations/org.intoto.json --out attestations/org.bundle.json
+          bnd push github ${{github.repository}} attestations/org.bundle.json
+        id: attest-org
+
+      - name: Generate branch rules attestation
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          snappy snap builtin:github/branch-rules.yaml -v BRANCH=main -v REPO=bnd -v ORG=${{github.repository_owner}} --attest > attestations/branch.intoto.json
+          bnd statement attestations/branch.intoto.json --out attestations/branch.bundle.json
+          bnd push github ${{github.repository}} attestations/branch.bundle.json
+        id: attest-branch
+
+      - name: Generate repository attestation
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          snappy snap builtin:github/repo.yaml -v BRANCH=main -v REPO=bnd -v ORG=${{github.repository_owner}} --attest > attestations/repo.intoto.json
+          bnd statement attestations/repo.intoto.json --out attestations/repo.bundle.json
+          bnd push github attestations/${{github.repository}} attestations/repo.bundle.json
+        id: attest-repo
+  
       - name: Pack Attestations
         id: pack-attestations
         run: |
-          bnd pack si.bundle.json slsa.bundle.json spdx.intoto.json > attestations.jsonl
+          bnd pack attestations/si.bundle.json attestations/slsa.bundle.json attestations/spdx.intoto.json attestations/mfa.bundle.json attestations/org.bundle.json attestations/branch.bundle.json attestations/repo.bundle.json > attestations.jsonl
 
       - name: upload-attestation
         id: upload-release-asset 
@@ -88,7 +128,7 @@ jobs:
         with:
           files: |
               attestations.jsonl
-              ${{ github.event.repository.name }}-${{ steps.tag.outputs.TAG }}.spdx.json
+              attestations/${{ github.event.repository.name }}-${{ steps.tag.outputs.TAG }}.spdx.json
           tag_name: "${{ steps.tag.outputs.TAG }}"
           token: ${{ secrets.GITHUB_TOKEN }}
         env:

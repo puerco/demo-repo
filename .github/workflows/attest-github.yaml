@@ -14,20 +14,20 @@ jobs:
 
     steps:
       - name: Setup bnd
-        uses: carabiner-dev/bnd-actions/setup@HEAD
+        uses: carabiner-dev/actions/install/bnd@HEAD
 
       - name: Setup snappy
-        uses: carabiner-dev/snappy-actions/setup@HEAD
+        uses: carabiner-dev/actions/install/snappy@HEAD
 
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Generate org attestation
+      - name: Generate MFA attestation
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
           snappy snap builtin:github/mfa.yaml -v ORG=${{github.repository_owner}} --attest > mfa.intoto.json
           bnd statement mfa.intoto.json --out mfa.bundle.json
-          bnd push ${{github.repository}} mfa.bundle.json
+          bnd push github ${{github.repository}} mfa.bundle.json
         id: attest-mfa
 
       - name: Generate org attestation
@@ -36,7 +36,7 @@ jobs:
         run: |
           snappy snap builtin:github/org.yaml -v BRANCH=main -v REPO=bnd -v ORG=${{github.repository_owner}} --attest > org.intoto.json
           bnd statement org.intoto.json --out org.bundle.json
-          bnd push ${{github.repository}} org.bundle.json
+          bnd push github ${{github.repository}} org.bundle.json
         id: attest-org
 
       - name: Generate branch rules attestation
@@ -45,7 +45,7 @@ jobs:
         run: |
           snappy snap builtin:github/branch-rules.yaml -v BRANCH=main -v REPO=bnd -v ORG=${{github.repository_owner}} --attest > branch.intoto.json
           bnd statement branch.intoto.json --out branch.bundle.json
-          bnd push ${{github.repository}} branch.bundle.json
+          bnd push github ${{github.repository}} branch.bundle.json
         id: attest-branch
 
       - name: Generate repo attestation
@@ -54,6 +54,6 @@ jobs:
         run: |
           snappy snap builtin:github/repo.yaml -v BRANCH=main -v REPO=bnd -v ORG=${{github.repository_owner}} --attest > repo.intoto.json
           bnd statement repo.intoto.json --out repo.bundle.json
-          bnd push ${{github.repository}} repo.bundle.json
+          bnd push github ${{github.repository}} repo.bundle.json
         id: attest-repo
 
