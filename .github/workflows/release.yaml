@@ -65,7 +65,7 @@ jobs:
         uses: carabiner-dev/actions/install/unpack@HEAD
 
       - name: Generate SBOM
-        run:
+        run: |
           mkdir attestations
           unpack extract . --ignore-other-codebases -f spdx --attest > attestations/spdx.intoto.json
           unpack extract . --ignore-other-codebases -f spdx > attestations/${{ github.event.repository.name }}-${{ steps.tag.outputs.TAG }}.spdx.json
@@ -87,7 +87,7 @@ jobs:
         run: |
             snappy snap builtin:github/mfa.yaml -v ORG=${{github.repository_owner}} --attest > attestations/mfa.intoto.json
             bnd statement attestations/mfa.intoto.json --out attestations/mfa.bundle.json
-            bnd push ${{github.repository}} attestations/mfa.bundle.json
+            bnd push github ${{github.repository}} attestations/mfa.bundle.json
         id: attest-mfa
   
       - name: Generate org attestation
