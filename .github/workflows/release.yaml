@@ -115,7 +115,7 @@ jobs:
         run: |
           snappy snap builtin:github/repo.yaml -v BRANCH=main -v REPO=bnd -v ORG=${{github.repository_owner}} --attest > attestations/repo.intoto.json
           bnd statement attestations/repo.intoto.json --out attestations/repo.bundle.json
-          bnd push github attestations/${{github.repository}} attestations/repo.bundle.json
+          bnd push github ${{github.repository}} attestations/repo.bundle.json
         id: attest-repo
   
       - name: Pack Attestations
