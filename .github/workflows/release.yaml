@@ -97,7 +97,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          snappy snap builtin:github/org.yaml -v BRANCH=main -v REPO=bnd -v ORG=${{github.repository_owner}} --attest > attestations/org.intoto.json
+          snappy snap builtin:github/org.yaml -v BRANCH=main -v REPO=${{github.event.repository}} -v ORG=${{github.repository_owner}} --attest > attestations/org.intoto.json
           bnd statement attestations/org.intoto.json --out attestations/org.bundle.json
           bnd push github ${{github.repository}} attestations/org.bundle.json
         id: attest-org
@@ -106,7 +106,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          snappy snap builtin:github/branch-rules.yaml -v BRANCH=main -v REPO=bnd -v ORG=${{github.repository_owner}} --attest > attestations/branch.intoto.json
+          snappy snap builtin:github/branch-rules.yaml -v BRANCH=main -v REPO=${{github.event.repository}} -v ORG=${{github.repository_owner}} --attest > attestations/branch.intoto.json
           bnd statement attestations/branch.intoto.json --out attestations/branch.bundle.json
           bnd push github ${{github.repository}} attestations/branch.bundle.json
         id: attest-branch
@@ -115,7 +115,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          snappy snap builtin:github/repo.yaml -v BRANCH=main -v REPO=bnd -v ORG=${{github.repository_owner}} --attest > attestations/repo.intoto.json
+          snappy snap builtin:github/repo.yaml -v BRANCH=main -v REPO=${{github.event.repository}} -v ORG=${{github.repository_owner}} --attest > attestations/repo.intoto.json
           bnd statement attestations/repo.intoto.json --out attestations/repo.bundle.json
           bnd push github ${{github.repository}} attestations/repo.bundle.json
         id: attest-repo
