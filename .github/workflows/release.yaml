@@ -128,7 +128,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
           beaker run . --attest -o attestations/tests.intoto.json
-          bnd statement attestations/attestations/tests.intoto.json --out attestations/tests.bundle.json
+          bnd statement attestations/tests.intoto.json --out attestations/tests.bundle.json
         id: attest-tests
   
       - name: Pack Attestations
