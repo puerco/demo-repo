@@ -67,6 +67,9 @@ jobs:
       - name: Setup unpack
         uses: carabiner-dev/actions/install/unpack@HEAD
 
+      - name: Setup beaker
+        uses: carabiner-dev/actions/install/beaker@HEAD
+
       - name: Generate SBOM
         run: |
           mkdir attestations
@@ -119,11 +122,19 @@ jobs:
           bnd statement attestations/repo.intoto.json --out attestations/repo.bundle.json
           bnd push github ${{github.repository}} attestations/repo.bundle.json
         id: attest-repo
+
+      - name: Attest tests
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          beaker run . --attest -o attestations/tests.intoto.json
+          bnd statement attestations/attestations/tests.intoto.json --out attestations/tests.bundle.json
+        id: attest-tests
   
       - name: Pack Attestations
         id: pack-attestations
         run: |
-          bnd pack attestations/si.bundle.json attestations/slsa.bundle.json attestations/spdx.intoto.json attestations/mfa.bundle.json attestations/org.bundle.json attestations/branch.bundle.json attestations/repo.bundle.json > attestations.jsonl
+          bnd pack attestations/si.bundle.json attestations/slsa.bundle.json attestations/spdx.intoto.json attestations/mfa.bundle.json attestations/org.bundle.json attestations/branch.bundle.json attestations/repo.bundle.json attestations/tests.bundle.json > attestations.jsonl
 
       - name: upload-attestation
         id: upload-release-asset 
