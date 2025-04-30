@@ -123,14 +123,22 @@ jobs:
           bnd push github ${{github.repository}} attestations/repo.bundle.json
         id: attest-repo
 
+      - name: "Generate Scorecard Attestation"
+        uses: ossf/scorecard-action@f49aabe0b5af0936a0987cfb85d86b75731b0186 # v2.4.1
+        with:
+          results_file: attestations/scorecard.intoto.json
+          results_format: intoto
+          publish_results: false
+          
       - name: Attest tests
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
           beaker run . --attest -o attestations/tests.intoto.json
           bnd statement attestations/tests.intoto.json --out attestations/tests.bundle.json
+          bnd statement attestations/scorecard.intoto.json --out attestations/scorecard.intoto.json
         id: attest-tests
-  
+
       - name: Pack Attestations
         id: pack-attestations
         run: |
