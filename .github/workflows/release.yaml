@@ -78,17 +78,19 @@ jobs:
           mkdir attestations
           unpack extract . --ignore-other-codebases -f spdx --attest > attestations/spdx.intoto.json
           unpack extract . --ignore-other-codebases -f spdx > attestations/${{ github.event.repository.name }}-${{ steps.tag.outputs.TAG }}.spdx.json
+          bnd statement attestations/spdx.intoto.json --out attestations/spdx.bundle.json
+          rm -f attestations/spdx.intoto.json
      
       - run: |
           tejolote attest --artifacts github://${{ github.event.repository.owner.login }}/${{ github.event.repository.name }}/${{ steps.tag.outputs.TAG }} github://${{ github.event.repository.owner.login }}/${{ github.event.repository.name }}/${{ github.run_id }} --output attestations/slsa.intoto.json 
           cat attestations/slsa.intoto.json
           bnd statement attestations/slsa.intoto.json --out attestations/slsa.bundle.json
+          rm -f attestations/slsa.intoto.json
 
       - name: Attest Security Insights
         id: attest-si
         run: |
           bnd commit --predicate-git-path=SECURITY-INSIGHTS.yml --type=https://github.com/ossf/security-insights-spec --yaml --repo . > attestations/si.bundle.json
-          cat attestations/si.bundle.json
 
       - name: Generate MFA attestation
         env:
@@ -96,7 +98,7 @@ jobs:
         run: |
             snappy snap builtin:github/mfa.yaml -v ORG=${{ github.event.repository.owner.login }} --attest > attestations/mfa.intoto.json
             bnd statement attestations/mfa.intoto.json --out attestations/mfa.bundle.json
-            bnd push github ${{github.repository}} attestations/mfa.bundle.json
+            rm -f attestations/mfa.intoto.json
         id: attest-mfa
   
       - name: Generate org attestation
@@ -105,7 +107,7 @@ jobs:
         run: |
           snappy snap builtin:github/org.yaml -v BRANCH=main -v REPO=${{ github.event.repository.name }} -v ORG=${{ github.event.repository.owner.login }} --attest > attestations/org.intoto.json
           bnd statement attestations/org.intoto.json --out attestations/org.bundle.json
-          bnd push github ${{github.repository}} attestations/org.bundle.json
+          rm -f attestations/org.intoto.json
         id: attest-org
 
       - name: Generate branch rules attestation
@@ -114,7 +116,7 @@ jobs:
         run: |
           snappy snap builtin:github/branch-rules.yaml -v BRANCH=main -v REPO=${{ github.event.repository.name }} -v ORG=${{ github.event.repository.owner.login }} --attest > attestations/branch.intoto.json
           bnd statement attestations/branch.intoto.json --out attestations/branch.bundle.json
-          bnd push github ${{github.repository}} attestations/branch.bundle.json
+          rm -f attestations/branch.intoto.json
         id: attest-branch
 
       - name: Generate repository attestation
@@ -123,7 +125,7 @@ jobs:
         run: |
           snappy snap builtin:github/repo.yaml -v BRANCH=main -v REPO=${{ github.event.repository.name }} -v ORG=${{ github.event.repository.owner.login }} --attest > attestations/repo.intoto.json
           bnd statement attestations/repo.intoto.json --out attestations/repo.bundle.json
-          bnd push github ${{github.repository}} attestations/repo.bundle.json
+          rm -f attestations/repo.intoto.json
         id: attest-repo
 
       - name: "Generate Scorecard Attestation"
@@ -132,12 +134,14 @@ jobs:
         run: |
           scorecard --repo=carabiner-dev/demo-repo  --format=intoto  > attestations/scorecard.intoto.json
           bnd statement attestations/scorecard.intoto.json --out attestations/scorecard.bundle.json          
+          rm -f attestations/scorecard.intoto.json
       - name: Attest tests
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
           beaker run . --attest -o attestations/tests.intoto.json
           bnd statement attestations/tests.intoto.json --out attestations/tests.bundle.json
+          rm -f attestations/tests.intoto.json
         id: attest-tests
 
       - name: Pack Attestations
