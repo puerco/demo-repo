@@ -136,6 +136,7 @@ jobs:
           scorecard --repo=carabiner-dev/demo-repo  --format=intoto  > attestations/scorecard.intoto.json
           bnd statement attestations/scorecard.intoto.json --out attestations/scorecard.bundle.json          
           rm -f attestations/scorecard.intoto.json
+
       - name: Attest tests
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -144,6 +145,21 @@ jobs:
           bnd statement attestations/tests.intoto.json --out attestations/tests.bundle.json
           rm -f attestations/tests.intoto.json
         id: attest-tests
+
+      - name: "Run scanner"
+        uses: google/osv-scanner-action/osv-scanner-action@119c605e0e6e6c491e092da25b0c752d109b0b43 # v2.0.0
+        continue-on-error: true
+        with:
+          scan-args: |-
+            --output=attestations/osv-results.json 
+            --format=json
+
+      - name: "Assemble VEX and attest OSV results"
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          bnd predicate attestations/osv-results.json --out attestations/osv-results.bundle.json --type="https://ossf.github.io/osv-schema/results@v1.6.7"        
+          rm -f attestations/scorecard.intoto.json
 
       - name: Pack Attestations
         id: pack-attestations
