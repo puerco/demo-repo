@@ -87,10 +87,11 @@ jobs:
           bnd statement attestations/slsa.intoto.json --out attestations/slsa.bundle.json
           rm -f attestations/slsa.intoto.json
 
-      - name: Attest Security Insights
-        id: attest-si
+      - name: Attest Security Insights / OpenEoX
+        id: attest-si-openeox
         run: |
           bnd commit --predicate-git-path=SECURITY-INSIGHTS.yml --type=https://github.com/ossf/security-insights-spec --yaml --repo . > attestations/si.bundle.json
+          bnd commit --predicate-git-path=.openeox.json --type="https://docs.oasis-open.org/openeox/core/v1.0" --repo . > attestations/openeox.bundle.json
 
       - name: Generate MFA attestation
         env:
