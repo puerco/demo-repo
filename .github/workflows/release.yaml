@@ -73,6 +73,9 @@ jobs:
       - name: Setup beaker
         uses: carabiner-dev/actions/install/beaker@HEAD
 
+      - name: Setup vexflow
+        uses: carabiner-dev/actions/install/vexflow@HEAD
+
       - name: Generate SBOM
         run: |
           mkdir attestations
