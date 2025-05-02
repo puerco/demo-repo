@@ -164,6 +164,7 @@ jobs:
         run: |
           vexflow assemble \
             --repo=carabiner-dev/demo-repo \
+            --product="sha1:${{ github.sha }}" \
             --triage-repo=carabiner-dev/.vexflow-demo-repo  > attestations/main.openvex.json
           
           bnd predicate attestations/main.openvex.json \
