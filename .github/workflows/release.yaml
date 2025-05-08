@@ -45,9 +45,11 @@ jobs:
           echo "TMP_DIR=${TMP_DIR}" >> $GITHUB_OUTPUT
 
       - name: Build
-        id: run-build
+        id: build
         run: |
           go build -o "${{ steps.tmpdir.outputs.TMP_DIR }}/hello-linux-amd64" . 
+          SHA=$(sha256sum "${{ steps.tmpdir.outputs.TMP_DIR }}/hello-linux-amd64" | awk '{print $1}')
+          echo "sha256=sha256:${TMP_DIR}" >> $GITHUB_OUTPUT
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -186,11 +188,11 @@ jobs:
         run: |
           bnd pack attestations/ > attestations.jsonl
 
-      - name: Verify
+      - name: 🔴🟡🟢 Verify
         id: ampel-verify
         uses: carabiner-dev/actions/ampel/verify@HEAD
         with:
-          subject: "${{ steps.tmpdir.outputs.TMP_DIR }}/hello-linux-amd64" 
+          subject: "${{ steps.build.outputs.sha256 }}" 
           collector: "jsonl:attestations.jsonl"
           policy: "git+https://github.com/carabiner-dev/examples#baseline/osps-baseline.policy.json"
           attest: true
