@@ -49,7 +49,7 @@ jobs:
         run: |
           go build -o "${{ steps.tmpdir.outputs.TMP_DIR }}/hello-linux-amd64" . 
           SHA=$(sha256sum "${{ steps.tmpdir.outputs.TMP_DIR }}/hello-linux-amd64" | awk '{print $1}')
-          echo "sha256=sha256:${TMP_DIR}" >> $GITHUB_OUTPUT
+          echo "sha256=sha256:${SHA}" >> $GITHUB_OUTPUT
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
