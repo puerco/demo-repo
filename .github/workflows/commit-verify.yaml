@@ -160,7 +160,7 @@ jobs:
         id: ampel-verify
         uses: carabiner-dev/actions/ampel/verify@HEAD
         with:
-          subject: "${{ github.sha }}" 
+          subject: "sha1:${{ github.sha }}" 
           collector: "jsonl:attestations.jsonl"
           policy: "git+https://github.com/carabiner-dev/examples#baseline/osps-baseline.policy.json"
           attest: true
