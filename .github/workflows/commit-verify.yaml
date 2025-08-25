@@ -1,4 +1,4 @@
-name: Release
+name: OSPS Baseline - Continous Verification
 
 on:
   push: {}
@@ -162,7 +162,8 @@ jobs:
         with:
           subject: "sha1:${{ github.sha }}" 
           collector: "jsonl:attestations.jsonl"
-          policy: "git+https://github.com/carabiner-dev/examples#baseline/osps-baseline.policy.json"
+          # policy: "git+https://github.com/carabiner-dev/examples#baseline/osps-baseline.policy.json"
+          policy: "git+https://github.com/carabiner-dev/policies#sets/baseline/osps-baseline.policy.json"
           attest: true
           fail: "false"
 
